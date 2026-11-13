@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [{ "Name": "Duneglow project" }],
+        "Category": "Application Launchers",
+        "Description": "Full-screen frosted home screen: search, recent apps, apps by category.",
+        "Icon": "start-here-kde",
+        "Id": "org.duneglow.launcher",
+        "License": "GPL-3.0-or-later",
+        "Name": "Duneglow Launcher",
+        "Version": "0.1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

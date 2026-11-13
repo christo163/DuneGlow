@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Duneglow one-switch light/dark. GPL-3.0-or-later.
+# Usage: duneglow-mode light | dark | auto | status | check
+#   light / dark : switch everything now and keep it
+#   auto         : dark 18:00-05:59, light otherwise; re-checked every 10 minutes by a timer
+#   check        : apply only if the wanted look differs from the applied one (used by the timer)
+set -uo pipefail
+CONF="$HOME/.config/duneglow/mode.conf"
+STATE="$HOME/.cache/duneglow/mode-state"
+mkdir -p "$(dirname "$CONF")" "$(dirname "$STATE")"
+conf_mode() { sed -n 's/^mode=//p' "$CONF" 2>/dev/null | head -n1; }
+resolve() {
+  local m; m="$(conf_mode)"; m="${m:-auto}"
+  if [ "$m" = auto ]; then
+    local h="${DUNEGLOW_HOUR:-$(date +%H)}"; h=$((10#$h))
+    if [ "$h" -ge 18 ] || [ "$h" -lt 6 ]; then echo dark; else echo light; fi
+  else echo "$m"; fi
+}
+apply() {  # $1 = light|dark
+  local L="$1" C K T D W
+  if [ "$L" = dark ]; then C=DuneglowDark; K=Duneglow-Dark; T=Duneglow-Dark; D=Duneglow-Dark; else C=DuneglowLight; K=Duneglow-Light; T=Duneglow-Light; D=Duneglow-Light; fi
+  command -v plasma-apply-colorscheme >/dev/null && plasma-apply-colorscheme "$C" >/dev/null 2>&1 || echo "colours: not applied"
+  # Plasma theme (dock, panels, popups): only if the user is on a Duneglow one
+  local P cur; [ "$L" = dark ] && P=Duneglow || P=Duneglow-Light
+  cur="$(kreadconfig6 --file plasmarc --group Theme --key name 2>/dev/null)"
+  case "$cur" in Duneglow|Duneglow-Light) [ -d "$HOME/.local/share/plasma/desktoptheme/$P" ] && plasma-apply-desktoptheme "$P" >/dev/null 2>&1 ;; esac
+  command -v kvantummanager >/dev/null && kvantummanager --set "$K" >/dev/null 2>&1 || echo "kvantum: not applied"
+  kwriteconfig6 --file kdeglobals --group Icons --key Theme "$T"
+  for h in /usr/libexec/plasma-changeicons /usr/lib64/libexec/plasma-changeicons /usr/lib/libexec/plasma-changeicons; do
+    [ -x "$h" ] && { "$h" "$T" >/dev/null 2>&1 || true; break; }
+  done
+  kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key library org.kde.kwin.aurorae
+  kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme "__aurorae__svg__$D"
+  gdbus call --session --dest org.kde.KWin --object-path /KWin --method org.kde.KWin.reconfigure >/dev/null 2>&1 || true
+  # wallpaper: leave it alone if the user turned the switcher off
+  if command -v duneglow-wallpaper >/dev/null || [ -x "$HOME/.local/bin/duneglow-wallpaper" ]; then
+    local wm; wm="$(sed -n 's/^mode=//p' "$HOME/.config/duneglow/desktop.conf" 2>/dev/null | head -n1)"
+    if [ "$wm" != off ]; then
+      local cm; cm="$(conf_mode)"; cm="${cm:-auto}"
+      if [ "$cm" = auto ]; then W=auto; elif [ "$L" = dark ]; then W=night; else W=day; fi
+      "$HOME/.local/bin/duneglow-wallpaper" "$W" >/dev/null 2>&1 || true
+    fi
+  fi
+  rm -f "$HOME/.cache/icon-cache.kcache"
+  echo "$L" > "$STATE"
+  echo "Applied $L. (Apps that are already open keep their old look until you reopen them.)"
+}
+case "${1:-}" in
+  light|dark|auto) echo "mode=$1" > "$CONF"; apply "$(resolve)" ;;
+  check) want="$(resolve)"; [ "$(cat "$STATE" 2>/dev/null || true)" = "$want" ] || apply "$want" ;;
+  status) echo "mode=$(conf_mode || true)  wanted=$(resolve)  applied=$(cat "$STATE" 2>/dev/null || echo none)" ;;
+  *) echo "Usage: $0 light|dark|auto|status|check"; exit 1 ;;
+esac

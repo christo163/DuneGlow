@@ -1,0 +1,5 @@
+*.zip
+*.sha256
+__pycache__/
+*.pyc
+.cache/

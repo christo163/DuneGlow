@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [{ "Name": "Duneglow project" }],
+        "Category": "Windows and Tasks",
+        "Description": "One button that opens the window Overview.",
+        "Icon": "view-grid",
+        "Id": "org.duneglow.overview",
+        "License": "GPL-3.0-or-later",
+        "Name": "Duneglow Overview",
+        "Version": "0.1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

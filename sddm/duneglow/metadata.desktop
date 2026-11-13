@@ -1,0 +1,14 @@
+[SddmGreeterTheme]
+Name=Duneglow
+Description=Duneglow login screen: warm dunes by day, quiet blue night after dark.
+Author=Duneglow project
+Copyright=(c) Duneglow project
+License=GPL-3.0-or-later (code), CC-BY-SA-4.0 (artwork)
+Type=sddm-theme
+Version=0.1.0
+Website=
+Screenshot=preview.png
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=duneglow
+Theme-API=2.0

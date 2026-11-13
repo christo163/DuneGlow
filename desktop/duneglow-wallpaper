@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# Duneglow wallpaper switcher. GPL-3.0-or-later.
+# Usage: duneglow-wallpaper [auto|day|night|own|off|status|set-day FILE|set-night FILE|reset-pictures]
+#   auto / day / night : follow the clock (dark 18:00-05:59) or force one look
+#   own  (same as off) : never touch the wallpaper again; use the picture you choose in System Settings
+#   set-day FILE / set-night FILE : use YOUR pictures instead of the Duneglow ones. They follow light/dark like the built-in ones.
+#   reset-pictures     : back to the built-in Duneglow pictures
+#   status             : print what is set
+set -euo pipefail
+CONF="$HOME/.config/duneglow/desktop.conf"
+STATE="$HOME/.cache/duneglow/wallpaper-state"
+OWN="$HOME/.local/share/duneglow/wallpapers"
+WP="$HOME/.local/share/wallpapers/Duneglow/contents"
+mkdir -p "$(dirname "$CONF")" "$(dirname "$STATE")" "$OWN"
+key()    { sed -n "s/^$1=//p" "$CONF" 2>/dev/null | head -n1 || true; }
+setkey() { touch "$CONF"; sed -i "/^$1=/d" "$CONF"; echo "$1=$2" >> "$CONF"; }
+delkey() { [ -f "$CONF" ] && sed -i "/^$1=/d" "$CONF" || true; }
+mode() { key mode; }
+
+resolve_pics() {   # your pictures if you set them, otherwise the Duneglow ones
+  DAY="$WP/images/3840x2160.png"; NIGHT="$WP/images_dark/3840x2160.png"
+  local d n; d="$(key day)"; n="$(key night)"
+  if [ -n "$d" ] && [ -f "$d" ]; then DAY="$d"; fi
+  if [ -n "$n" ] && [ -f "$n" ]; then NIGHT="$n"; fi
+  return 0
+}
+resolve_pics
+
+copy_pic() {  # $1 = file, $2 = day|night
+  [ -f "${1:-}" ] || { echo "File not found: ${1:-}"; exit 1; }
+  case "$(file -b --mime-type "$1")" in image/jpeg|image/png|image/webp) ;; *) echo "Use a JPG, PNG or WebP picture."; exit 1;; esac
+  local ext="${1##*.}"; cp "$1" "$OWN/$2.$ext"; setkey "$2" "$OWN/$2.$ext"
+  [ "$(mode)" = off ] && setkey mode auto
+  rm -f "$STATE"; echo "Your $2 picture is set. It is kept in $OWN."
+}
+
+case "${1:-}" in
+  auto|day|night) setkey mode "$1"; echo "Mode set to $1." ;;
+  own|off)        setkey mode off; echo "Your own wallpaper is kept. Choose it in System Settings > Wallpaper. Undo: duneglow-wallpaper auto"; exit 0 ;;
+  set-day)        copy_pic "${2:-}" day; set -- "" ;;
+  set-night)      copy_pic "${2:-}" night; set -- "" ;;
+  reset-pictures) delkey day; delkey night; rm -f "$STATE"; echo "Back to the Duneglow pictures."; set -- "" ;;
+  status) echo "mode=$(mode || true)"; echo "day picture:   $DAY"; echo "night picture: $NIGHT"; echo "applied=$(cat "$STATE" 2>/dev/null || echo none)"; exit 0 ;;
+  "") ;;
+  *) echo "Usage: $0 [auto|day|night|own|off|status|set-day FILE|set-night FILE|reset-pictures]"; exit 1 ;;
+esac
+
+resolve_pics
+M="$(mode || true)"; M="${M:-auto}"
+[ "$M" = off ] && exit 0
+
+if [ "$M" = auto ]; then
+  h=$((10#$(date +%H)))
+  if [ "$h" -ge 18 ] || [ "$h" -lt 6 ]; then want=night; else want=day; fi
+else
+  want="$M"
+fi
+
+# Already applied: nothing to do (keeps the timer cheap and lets a manual change stand until the next switch).
+[ "$(cat "$STATE" 2>/dev/null || true)" = "$want" ] && [ -z "${1:-}" ] && exit 0
+
+[ "$want" = night ] && IMG="$NIGHT" || IMG="$DAY"
+[ -f "$IMG" ] || { echo "Wallpaper not found: $IMG (run desktop/install.sh)"; exit 1; }
+command -v plasma-apply-wallpaperimage >/dev/null || { echo "plasma-apply-wallpaperimage not found"; exit 1; }
+
+# Fails quietly if plasmashell is not up yet; the timer retries.
+if plasma-apply-wallpaperimage "$IMG" >/dev/null 2>&1; then
+  echo "$want" > "$STATE"
+  echo "Applied $want wallpaper."
+else
+  echo "Could not apply wallpaper yet (is the desktop running?). Will retry."
+  exit 1
+fi

@@ -1,0 +1,9 @@
+[Unit]
+Description=Duneglow light/dark check (auto mode flips at 18:00 and 06:00)
+
+[Timer]
+OnStartupSec=60
+OnUnitActiveSec=10min
+
+[Install]
+WantedBy=timers.target

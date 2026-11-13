@@ -1,0 +1,9 @@
+{
+    "KPackageStructure": "Wallpaper/Images",
+    "KPlugin": {
+        "Authors": [{ "Name": "Duneglow project" }],
+        "Id": "Duneglow",
+        "License": "CC-BY-SA-4.0",
+        "Name": "Duneglow"
+    }
+}

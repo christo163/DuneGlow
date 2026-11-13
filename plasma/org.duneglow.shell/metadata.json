@@ -1,0 +1,16 @@
+{
+    "KPackageStructure": "Plasma/Shell",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Duneglow project"
+            }
+        ],
+        "Description": "Duneglow lock screen (glass card, cube logo, day/night wallpapers).",
+        "Id": "org.duneglow.shell",
+        "License": "GPL-3.0-or-later",
+        "Name": "Duneglow Lock Screen",
+        "Version": "0.4.1"
+    },
+    "X-Plasma-APIVersion": "2"
+}

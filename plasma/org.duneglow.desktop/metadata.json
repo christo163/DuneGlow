@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [{ "Name": "Duneglow project" }],
+        "Category": "",
+        "Description": "Duneglow splash screen: cube logo, glass card and a gradient progress bar.",
+        "Id": "org.duneglow.desktop",
+        "License": "GPL-3.0-or-later",
+        "Name": "Duneglow",
+        "Version": "0.4.0",
+        "Website": ""
+    }
+}

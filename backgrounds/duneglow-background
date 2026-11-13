@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# Duneglow backgrounds: your own picture for Plasma's lock screen, the login screen and the desktop. GPL-3.0-or-later.
+# Usage: duneglow-background <where> <picture | --current | --reset>
+#   where:  lock   Plasma's lock screen
+#           login  the login screen (asks for your password once, because it is a system folder)
+#           desktop  your desktop wallpaper, day and night
+#           all    all three
+#   picture: a JPG, PNG or WebP file      --current: the wallpaper you have on your desktop now      --reset: back to the built-in ones
+set -euo pipefail
+DATA="$HOME/.local/share/duneglow"; BG="$DATA/backgrounds"
+LOGIN_SCRIPT="$DATA/set-login-background.sh"
+mkdir -p "$BG"
+
+usage() { sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+[ $# -ge 1 ] || usage
+WHERE="$1"; ARG="${2:-}"
+
+current_wallpaper() {
+  local p
+  p="$(grep -m1 -E '^Image=' "$HOME/.config/plasma-org.kde.plasma.desktop-appletsrc" 2>/dev/null | cut -d= -f2- || true)"
+  p="$(python3 -c 'import sys,urllib.parse;print(urllib.parse.unquote(sys.argv[1].removeprefix("file://")))' "$p")"
+  if [ -d "$p" ]; then
+    p="$(find "$p" -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) -printf '%s %p\n' | sort -rn | head -1 | cut -d' ' -f2-)"
+  fi
+  [ -f "$p" ] || { echo "Could not find your current wallpaper. Give the picture path instead." >&2; exit 1; }
+  echo "$p"
+}
+check_pic() {
+  [ -f "$1" ] || { echo "File not found: $1" >&2; exit 1; }
+  case "$(file -b --mime-type "$1")" in image/jpeg|image/png|image/webp) ;; *) echo "Use a JPG, PNG or WebP picture." >&2; exit 1;; esac
+  [ "$(stat -c %s "$1")" -le 31457280 ] || { echo "Picture is over 30 MB. Use a smaller one." >&2; exit 1; }
+}
+set_lock() {   # $1 = picture path
+  check_pic "$1"
+  local ext="${1##*.}"; rm -f "$BG"/lock.*; cp "$1" "$BG/lock.$ext"
+  local url; url="file://$(python3 -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1]))' "$BG/lock.$ext")"
+  # Plasma's own lock screen: supported setting in kscreenlockerrc
+  kwriteconfig6 --file kscreenlockerrc --group Greeter --key WallpaperPlugin org.kde.image
+  kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key Image "$url"
+  echo "Lock screen picture set."
+}
+reset_lock() {
+  rm -f "$BG"/lock.*
+  kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key Image --delete 2>/dev/null || true
+  kwriteconfig6 --file kscreenlockerrc --group Greeter --key WallpaperPlugin --delete 2>/dev/null || true
+  echo "Lock screen back to the default."
+}
+set_login() {
+  [ -x "$LOGIN_SCRIPT" ] || { echo "Login helper missing: run backgrounds/install.sh again." >&2; exit 1; }
+  echo "The login screen is a system folder: asking for your password."
+  sudo "$LOGIN_SCRIPT" "$1"
+}
+set_desktop() {
+  check_pic "$1"
+  "$HOME/.local/bin/duneglow-wallpaper" set-day "$1"; "$HOME/.local/bin/duneglow-wallpaper" set-night "$1"
+}
+
+pic=""
+case "$ARG" in
+  "") usage ;;
+  --reset) ;;
+  --current) pic="$(current_wallpaper)"; echo "Using: $pic" ;;
+  *) pic="$ARG" ;;
+esac
+
+case "$WHERE" in
+  lock)    if [ "$ARG" = --reset ]; then reset_lock; else set_lock "$pic"; fi ;;
+  login)   if [ "$ARG" = --reset ]; then set_login --reset; else check_pic "$pic"; set_login "$pic"; fi ;;
+  desktop) if [ "$ARG" = --reset ]; then "$HOME/.local/bin/duneglow-wallpaper" reset-pictures; else set_desktop "$pic"; fi ;;
+  all)     if [ "$ARG" = --reset ]; then reset_lock; set_login --reset; "$HOME/.local/bin/duneglow-wallpaper" reset-pictures
+           else set_lock "$pic"; set_desktop "$pic"; set_login "$pic"; fi ;;
+  *) usage ;;
+esac

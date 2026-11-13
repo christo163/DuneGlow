@@ -1,0 +1,11 @@
+{
+    "KPackageStructure": "Plasma/Theme",
+    "KPlugin": {
+        "Authors": [{ "Name": "Duneglow project" }],
+        "Description": "Frosted-glass panels and popups. Everything else is inherited from the default theme.",
+        "Id": "Duneglow",
+        "License": "CC-BY-SA-4.0",
+        "Name": "Duneglow",
+        "Version": "0.1.0"
+    }
+}

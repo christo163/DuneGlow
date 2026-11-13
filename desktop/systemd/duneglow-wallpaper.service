@@ -1,0 +1,6 @@
+[Unit]
+Description=Duneglow day/night wallpaper
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/duneglow-wallpaper

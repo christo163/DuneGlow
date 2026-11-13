@@ -1,0 +1,7 @@
+Duneglow theme
+Code (Main.qml and scripts): GPL-3.0-or-later.
+Artwork (assets/*.png, logo): CC BY-SA 4.0, (c) Duneglow project.
+Fonts in fonts/: Inter, SIL Open Font License 1.1 (see Inter-LICENSE.txt).
+
+Custom backgrounds: pictures you add with set-background.sh stay on your own computer and are not part of
+this package. You are responsible for having the right to use them. Do not include them if you redistribute Duneglow.

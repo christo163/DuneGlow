@@ -1,0 +1,6 @@
+[Unit]
+Description=Duneglow light/dark mode check
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/duneglow-mode check

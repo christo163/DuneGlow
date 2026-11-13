@@ -1,0 +1,51 @@
+{
+  "name": "Dream",
+  "day": {
+    "bg": "#E8E5DC",
+    "surface": "#F4F2EC",
+    "glass": "rgba(255,255,255,0.55)",
+    "text": "#262B33",
+    "text_muted": "#5D6672",
+    "slate": "#5F7E9B",
+    "slate_deep": "#3E5670",
+    "clock": "#7F95AE",
+    "ember": "#F08A1C",
+    "sunset": "#C8503C",
+    "plum": "#8E3F6E",
+    "accent_from": "#F2A15A",
+    "accent_to": "#B05CC8"
+  },
+  "night": {
+    "bg": "#161C2E",
+    "surface": "#1F2740",
+    "glass": "rgba(38,48,78,0.55)",
+    "text": "#E7EBF4",
+    "text_muted": "#9AA7C0",
+    "slate": "#7C93B8",
+    "slate_deep": "#2A3654",
+    "clock": "#7C93B8",
+    "ember": "#F2A15A",
+    "sunset": "#D9705F",
+    "plum": "#A5629A",
+    "accent_from": "#E89A62",
+    "accent_to": "#A86BD0"
+  },
+  "type": {
+    "ui": "Inter",
+    "clock": "Lexend",
+    "clock_weight": 700,
+    "ui_weights": [
+      400,
+      500,
+      600
+    ],
+    "license": "SIL Open Font License 1.1 (both)"
+  },
+  "shape": {
+    "radius_window": 18,
+    "radius_control": 12,
+    "radius_dock": 26,
+    "blur_px": 28,
+    "glass_border_alpha": 0.35
+  }
+}

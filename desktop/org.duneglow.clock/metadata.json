@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [{ "Name": "Duneglow project" }],
+        "Category": "Date and Time",
+        "Description": "Large desktop clock and date in a mountain shade.",
+        "Icon": "preferences-system-time",
+        "Id": "org.duneglow.clock",
+        "License": "GPL-3.0-or-later",
+        "Name": "Duneglow Clock",
+        "Version": "0.1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

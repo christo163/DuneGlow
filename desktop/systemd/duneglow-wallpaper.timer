@@ -1,0 +1,10 @@
+[Unit]
+Description=Duneglow day/night wallpaper check
+
+[Timer]
+# 45 s after login (waits for the desktop), then every 10 minutes (covers 06:00, 18:00 and wake from sleep).
+OnStartupSec=45
+OnUnitActiveSec=10min
+
+[Install]
+WantedBy=timers.target
